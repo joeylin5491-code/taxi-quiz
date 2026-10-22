@@ -9,7 +9,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       background-color: #0f172a;
       color: #f8fafc;
       display: flex;
@@ -23,7 +23,7 @@
       border-bottom: 1px solid #334155;
       margin-bottom: 12px;
     }
-    h1 { font-size: 1.3rem; color: #f59e0b; margin-bottom: 8px; }
+    h1 { font-size: 1.4rem; color: #f59e0b; margin-bottom: 8px; }
     
     .filter-bar {
       display: flex;
@@ -134,14 +134,13 @@
   <header>
     <h1>🚖 計程車執登聽題寶</h1>
     
-    <!-- 區域與題型篩選器 -->
     <div class="filter-bar">
       <select id="region-select" onchange="filterQuestions()">
         <option value="ALL">全部考區 (北北基桃宜)</option>
         <option value="北北基">北北基考區</option>
         <option value="桃園">桃園考區</option>
         <option value="宜蘭">宜蘭考區</option>
-        <option value="通用法規">全國共通法規</option>
+        <option value="通用法規">全國通用法規</option>
       </select>
       <select id="type-select" onchange="filterQuestions()">
         <option value="ALL">全部題型</option>
@@ -151,15 +150,15 @@
     </div>
 
     <div class="status-bar">
-      <span id="category-name">分類：加載中...</span>
+      <span id="category-name">分類：載入中...</span>
       <span id="progress-text">0 / 0</span>
     </div>
   </header>
 
   <div class="card">
     <div class="badge-group">
-      <span class="badge" id="region-badge">北北基</span>
-      <span class="badge type" id="type-badge">是非題</span>
+      <span class="badge" id="region-badge">考區</span>
+      <span class="badge type" id="type-badge">題型</span>
     </div>
     <div class="question-text" id="question">題目載入中...</div>
     <ul class="options-list" id="options"></ul>
@@ -178,9 +177,7 @@
   </div>
 
   <script>
-    // 涵蓋 北北基桃宜 的範例題庫 (包含是非題與選擇題)
     const masterQuestionBank = [
-      // === 北北基 (是非題) ===
       {
         id: 1,
         region: "北北基",
@@ -194,18 +191,6 @@
       {
         id: 2,
         region: "北北基",
-        type: "是非題",
-        category: "地理環境",
-        question: "基隆港東岸旅客中心位於基隆市中正路上。",
-        options: ["1. 對 (O)", "2. 错 (X)"],
-        answer: 1,
-        explanation: "正確，基隆港東岸郵輪旅客中心位於中正路。"
-      },
-
-      // === 北北基 (選擇題) ===
-      {
-        id: 3,
-        region: "北北基",
         type: "選擇題",
         category: "地理環境",
         question: "忠孝東路 與 建國南路 交叉路口附近，主要的著名地標為何？",
@@ -213,10 +198,8 @@
         answer: 1,
         explanation: "忠孝東路與建國南路口主要著名地標為臺北科技大學（北科大）。"
       },
-
-      // === 桃園考區 (是非題 & 選擇題) ===
       {
-        id: 4,
+        id: 3,
         region: "桃園",
         type: "是非題",
         category: "地理環境",
@@ -226,7 +209,7 @@
         explanation: "正確，桃園國際機場位於桃園市大園區。"
       },
       {
-        id: 5,
+        id: 4,
         region: "桃園",
         type: "選擇題",
         category: "地理環境",
@@ -235,10 +218,8 @@
         answer: 2,
         explanation: "桃園火車站位於桃園區中正路。"
       },
-
-      // === 宜蘭考區 (是非題 & 選擇題) ===
       {
-        id: 6,
+        id: 5,
         region: "宜蘭",
         type: "是非題",
         category: "地理環境",
@@ -248,19 +229,7 @@
         explanation: "正確，雪山隧道北起坪林、南至頭城。"
       },
       {
-        id: 7,
-        region: "宜蘭",
-        type: "選擇題",
-        category: "地理環境",
-        question: "宜蘭縣政府與宜蘭縣議會位於哪一個鄉鎮市？",
-        options: ["1. 羅東鎮", "2. 礁溪鄉", "3. 宜蘭市"],
-        answer: 3,
-        explanation: "宜蘭縣政府位於宜蘭市縣政北路。"
-      },
-
-      // === 全國通用交通法規 (是非題 & 選擇題) ===
-      {
-        id: 8,
+        id: 6,
         region: "通用法規",
         type: "是非題",
         category: "交通法規",
@@ -270,7 +239,7 @@
         explanation: "錯誤，依規定受廢止執業登記處分者，3年內不得辦理執業登記。"
       },
       {
-        id: 9,
+        id: 7,
         region: "通用法規",
         type: "選擇題",
         category: "交通法規",
@@ -307,7 +276,7 @@
     }
 
     function renderQuestion() {
-      if (currentQuestions.length === 0) {
+      if (!currentQuestions || currentQuestions.length === 0) {
         document.getElementById('question').innerText = "此篩選條件下無題目！";
         document.getElementById('options').innerHTML = '';
         document.getElementById('explanation').style.display = 'none';
@@ -336,4 +305,119 @@
       if (q.explanation) {
         expEl.style.display = 'block';
         expEl.innerText = `💡 解析：${q.explanation}`;
+      } else {
+        expEl.style.display = 'none';
       }
+    }
+
+    function speakCurrentQuestion() {
+      if (!isPlaying || currentQuestions.length === 0) return;
+      synth.cancel();
+
+      const q = currentQuestions[currentIndex];
+      let text = `${q.type}。${q.question}。`;
+      q.options.forEach(opt => text += `${opt}。`);
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      utterance.rate = 0.9;
+
+      utterance.onend = () => {
+        if (!isPlaying) return;
+        setTimeout(() => {
+          if (!isPlaying) return;
+          const ansText = `正確答案是：${q.options[q.answer - 1]}。${q.explanation || ''}`;
+          const ansUtterance = new SpeechSynthesisUtterance(ansText);
+          ansUtterance.lang = 'zh-TW';
+          
+          ansUtterance.onend = () => {
+            if (!isPlaying) return;
+            setTimeout(() => {
+              if (isPlaying) {
+                nextQuestion();
+                speakCurrentQuestion();
+              }
+            }, 3000);
+          };
+          
+          synth.speak(ansUtterance);
+        }, 2000);
+      };
+
+      synth.speak(utterance);
+    }
+
+    function togglePlay() {
+      const btn = document.getElementById('play-btn');
+      if (isPlaying) {
+        isPlaying = false;
+        synth.cancel();
+        btn.innerText = '▶ 自動朗讀';
+        btn.classList.remove('active');
+      } else {
+        isPlaying = true;
+        btn.innerText = '⏸️ 暫停朗讀';
+        btn.classList.add('active');
+        speakCurrentQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentQuestions.length === 0) return;
+      if (currentIndex < currentQuestions.length - 1) {
+        currentIndex++;
+      } else {
+        currentIndex = 0;
+      }
+      renderQuestion();
+      if (isPlaying) speakCurrentQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentQuestions.length === 0) return;
+      if (currentIndex > 0) {
+        currentIndex--;
+      } else {
+        currentIndex = currentQuestions.length - 1;
+      }
+      renderQuestion();
+      if (isPlaying) speakCurrentQuestion();
+    }
+
+    function startSTT() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("您的瀏覽器不支援語音辨識功能！");
+        return;
+      }
+
+      synth.cancel();
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'zh-TW';
+      
+      const sttBtn = document.getElementById('stt-btn');
+      sttBtn.innerText = '🎙️ 聆聽中...';
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        alert(`您說的是：${transcript}`);
+        sttBtn.innerText = '🎙️ 語音答題';
+      };
+
+      recognition.onerror = () => {
+        sttBtn.innerText = '🎙️ 語音答題';
+      };
+
+      recognition.start();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      filterQuestions();
+    });
+  </script>
+</body>
+</html>
