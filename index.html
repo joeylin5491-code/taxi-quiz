@@ -309,44 +309,60 @@
         expEl.style.display = 'none';
       }
     }
+function speakCurrentQuestion() {
+  if (!isPlaying || currentQuestions.length === 0) return;
+  
+  // 清除前一次的語音播放
+  synth.cancel();
 
-    function speakCurrentQuestion() {
-      if (!isPlaying || currentQuestions.length === 0) return;
-      synth.cancel();
+  const q = currentQuestions[currentIndex];
+  // 組合題目與選項朗讀文字
+  let text = `${q.type}。${q.question}。`;
+  q.options.forEach(opt => text += `${opt}。`);
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'zh-TW';
+  utterance.rate = 0.95; // 朗讀速度 (0.8~1.0 適合開車聽)
 
-      const q = currentQuestions[currentIndex];
-      let text = `${q.type}。${q.question}。`;
-      q.options.forEach(opt => text += `${opt}。`);
+  // 當題目與選項唸完時
+  utterance.onend = () => {
+    if (!isPlaying) return;
+
+    // 停頓 2 秒 (給司機思考時間)
+    setTimeout(() => {
+      if (!isPlaying) return;
+
+      const ansText = `正確答案是：${q.options[q.answer - 1]}。${q.explanation || ''}`;
+      const ansUtterance = new SpeechSynthesisUtterance(ansText);
+      ansUtterance.lang = 'zh-TW';
+      ansUtterance.rate = 0.95;
       
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'zh-TW';
-      utterance.rate = 0.9;
-
-      utterance.onend = () => {
+      // 當答案與解析唸完時
+      ansUtterance.onend = () => {
         if (!isPlaying) return;
+
+        // 停頓 2.5 秒後自動切換並播報下一題 (不需點按鈕)
         setTimeout(() => {
-          if (!isPlaying) return;
-          const ansText = `正確答案是：${q.options[q.answer - 1]}。${q.explanation || ''}`;
-          const ansUtterance = new SpeechSynthesisUtterance(ansText);
-          ansUtterance.lang = 'zh-TW';
-          
-          ansUtterance.onend = () => {
-            if (!isPlaying) return;
-            setTimeout(() => {
-              if (isPlaying) {
-                nextQuestion();
-                speakCurrentQuestion();
-              }
-            }, 3000);
-          };
-          
-          synth.speak(ansUtterance);
-        }, 2000);
+          if (isPlaying) {
+            // 自動遞增題號
+            if (currentIndex < currentQuestions.length - 1) {
+              currentIndex++;
+            } else {
+              currentIndex = 0; // 播到最後一題時，自動循環回到第一題
+            }
+            
+            renderQuestion();        // 刷新介面畫面
+            speakCurrentQuestion();  // 自動接續朗讀下一題
+          }
+        }, 2500); 
       };
+      
+      synth.speak(ansUtterance);
+    }, 2000); 
+  };
 
-      synth.speak(utterance);
-    }
-
+  synth.speak(utterance);
+}
     function togglePlay() {
       const btn = document.getElementById('play-btn');
       if (isPlaying) {
